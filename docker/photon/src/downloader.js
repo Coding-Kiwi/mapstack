@@ -40,7 +40,8 @@ async function downloadAndExtract(url) {
             // Spawn bzip2 -cd
             const bzip2 = spawn('bzip2', ['-cd'], { stdio: ['pipe', 'pipe', 'inherit'] });
 
-            const tar = spawn('tar', ['-x'], { stdio: ['pipe', 'inherit', 'inherit'], cwd: '/photon' });
+            //the tar has a folde called photon_data so it should land in /app/photon_data
+            const tar = spawn('tar', ['-x'], { stdio: ['pipe', 'inherit', 'inherit'], cwd: '/app' });
 
             // Pipe download -> bzip2 -> tar
             res.pipe(bzip2.stdin);

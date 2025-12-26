@@ -1,0 +1,30 @@
+services:
+  mapstack:
+    build: ./docker/main
+
+  photon:
+    image: codingkiwi/mapstack-photon
+    volumes:
+      - ./var/photon:/app/photon_data
+    environment:
+      MANAGED: false
+      COUNTRY: "is"
+
+  versatiles:
+    image: codingkiwi/mapstack-versatiles
+    volumes:
+      - ./var/versatiles:/app/versatiles_data
+    environment:
+      MANAGED: false
+      BBOX: "13.091,52.334,13.74,52.676"
+
+  graphhopper:
+    image: codingkiwi/mapstack-graphhopper
+    volumes:
+      - ./var/graphhopper:/app/graphhopper_data
+    environment:
+      MANAGED: false
+      REGION: "europe/iceland-latest"
+
+  valkey:
+    image: valkey/valkey:9

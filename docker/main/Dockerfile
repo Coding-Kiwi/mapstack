@@ -10,10 +10,6 @@ COPY src /app/src
 
 RUN npm ci
 
-VOLUME /data/photon
-VOLUME /data/versatiles
-VOLUME /data/graphhopper
-
 EXPOSE 80
 EXPOSE 8080
 

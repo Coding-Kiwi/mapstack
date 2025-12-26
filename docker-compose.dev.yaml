@@ -2,7 +2,6 @@ services:
   mapstack:
     build: ./docker/main
     volumes:
-      - ./var/photon:/data/photon
       # DEV
       - ./docker/main/src:/app/src
       - ./docker/main/node_modules:/app/node_modules
@@ -12,12 +11,12 @@ services:
       context: "."
       dockerfile: ./docker/photon/Dockerfile
     volumes:
-      - ./var/photon:/photon/photon_data
+      - ./var/photon:/app/photon_data
       # DEV
-      - ./docker/photon/src:/photon/src
-      - ./docker/photon/node_modules:/photon/node_modules
-      - ./docker/photon/.env:/photon/.env
-      - ./docker/shared:/photon/shared
+      - ./docker/photon/src:/app/src
+      - ./docker/photon/node_modules:/app/node_modules
+      - ./docker/photon/.env:/app/.env
+      - ./docker/shared:/app/shared
     environment:
       MANAGED: false
       COUNTRY: "is"

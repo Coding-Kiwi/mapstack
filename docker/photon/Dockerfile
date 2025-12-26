@@ -1,23 +1,23 @@
 FROM eclipse-temurin:21-jre-alpine
 
-WORKDIR /photon
+WORKDIR /app
 
 # === nodejs ===
 RUN apk add --no-cache nodejs npm
 
-COPY docker/photon/package*.json /photon
-COPY docker/photon/src /photon/src
-COPY docker/shared /photon/shared
+COPY docker/photon/package*.json /app
+COPY docker/photon/src /app/src
+COPY docker/shared /app/shared
 
 RUN npm ci
 
 # === photon ===
 ARG PHOTON_VERSION=0.7.4
-ADD https://github.com/komoot/photon/releases/download/${PHOTON_VERSION}/photon-opensearch-${PHOTON_VERSION}.jar /photon/photon.jar
+ADD https://github.com/komoot/photon/releases/download/${PHOTON_VERSION}/photon-opensearch-${PHOTON_VERSION}.jar /app/photon.jar
 
-ENV PROTON_DATA_PATH="/photon/photon_data"
+ENV PROTON_DATA_PATH="/app/photon_data"
 
-VOLUME /photon/photon_data
+VOLUME /app/photon_data
 
 EXPOSE 2322
 
