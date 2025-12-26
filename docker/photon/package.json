@@ -11,6 +11,7 @@
   "dependencies": {
     "@dotenvx/dotenvx": "^1.51.2",
     "fancy-log": "^2.0.0",
+    "got": "^14.6.5",
     "ioredis": "^5.8.2"
   }
 }
