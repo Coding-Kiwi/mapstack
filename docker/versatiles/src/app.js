@@ -1,6 +1,7 @@
 import "@dotenvx/dotenvx/config";
 import logger from "fancy-log";
 import { handleSigterm, setupRedis, stopAllProcesses } from "../shared/utils.js";
+import { initStatus, updateDiskUsage } from "./status.js";
 import * as versatiles from "./versatiles.js";
 
 handleSigterm(() => {
@@ -57,8 +58,16 @@ async function initEnvMode() {
 }
 
 async function initManagedMode() {
+    await initStatus();
+    await updateDiskUsage();
+
     setupRedis("mapstack", msg => {
         if (msg.cmd === "versatiles.set-bbox") {
+            switchBBOX(msg.bbox);
+            return;
+        }
+
+        if (msg.cmd === "all.status.update") {
             switchBBOX(msg.bbox);
             return;
         }

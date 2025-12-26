@@ -3,11 +3,15 @@ import fastifyProxy from "@fastify/http-proxy";
 import fastifyStatic from '@fastify/static';
 import logger from "fancy-log";
 import fastify from "fastify";
+import got from "got";
 import path from "node:path";
 import { getRedis, handleSigterm, setupRedis } from "../shared/utils.js";
 import { setupCountryList } from "./countrylist.js";
 
 handleSigterm(() => { });
+
+//TODO move to utils
+const delay = ms => new Promise(res => setTimeout(res, ms));
 
 // init
 (async () => {
@@ -70,18 +74,61 @@ handleSigterm(() => { });
         })
 
         admin.get("/admin/status", async (req, res) => {
+            let versatiles_status = "offline";
+            try {
+                versatiles_status = await got(process.env.VERSATILES_URL + "/status", {
+                    timeout: {
+                        request: 100
+                    },
+                    retry: { limit: 0 }
+                }).text();
+
+                versatiles_status = versatiles_status.includes("ready") ? "online" : "starting";
+            } catch (error) {
+                if (error.code === "ETIMEDOUT") versatiles_status = "starting";
+            }
+
+            let photon_status = "offline";
+            try {
+                photon_status = await got(process.env.PHOTON_URL + "/status", {
+                    timeout: {
+                        request: 100
+                    },
+                    retry: { limit: 0 }
+                }).json();
+
+                photon_status = photon_status.status === "Ok" ? "online" : "offline";
+            } catch (error) {
+                if (error.code === "ETIMEDOUT") photon_status = "starting";
+            }
+
+            let hopper_status = "offline";
+
+            try {
+                hopper_status = await got(process.env.GRAPHHOPPER_URL + "/health", {
+                    timeout: {
+                        request: 100
+                    },
+                    retry: { limit: 0 }
+                }).text();
+
+                hopper_status = hopper_status === "OK" ? "online" : "starting"
+            } catch (error) {
+                if (error.code === "ETIMEDOUT") hopper_status = "starting";
+            }
+
             return res.send({
                 photon: {
-                    status: "offline",
-                    disk_usage: null
+                    status: photon_status,
+                    disk_usage: await redis.get("photon.disk_usage")
                 },
                 versatiles: {
-                    status: "starting",
-                    disk_usage: null
+                    status: versatiles_status,
+                    disk_usage: await redis.get("versatiles.disk_usage")
                 },
                 graphhopper: {
-                    status: "online",
-                    disk_usage: "23.4 MB"
+                    status: hopper_status,
+                    disk_usage: await redis.get("graphhopper.disk_usage")
                 }
             });
         })

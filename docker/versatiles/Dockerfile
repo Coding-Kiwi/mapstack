@@ -25,6 +25,8 @@ COPY docker/versatiles/config.yaml /app/config.yaml
 
 VOLUME /app/versatiles_data
 
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 CMD curl -f http://localhost:8080/status || exit 1
+
 EXPOSE 8080
 
 ENTRYPOINT ["node", "src/app.js"]

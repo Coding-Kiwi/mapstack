@@ -2,6 +2,7 @@ import logger from "fancy-log";
 import { mkdir } from "fs/promises";
 import path from "path";
 import { downloadFile, launchProcess, stopProcess } from "../shared/utils.js";
+import { updateDiskUsage } from "./status.js";
 
 export const PBF_FILE = path.join(process.env.GH_DATA_PATH, "input.osm.pbf");
 export const CACHE_DIR = path.join(process.env.GH_DATA_PATH, "cache");
@@ -38,6 +39,7 @@ export async function downloadRegion(regionName) {
 
     await downloadFile(parsedUrl, PBF_FILE);
     await importPbf();
+    await updateDiskUsage();
 }
 
 export async function start() {

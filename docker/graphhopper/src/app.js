@@ -2,8 +2,9 @@ import "@dotenvx/dotenvx/config";
 import logger from "fancy-log";
 import { constants } from 'fs';
 import { access, readdir } from 'fs/promises';
-import { handleSigterm, stopAllProcesses } from "../shared/utils.js";
+import { handleSigterm, setupRedis, stopAllProcesses } from "../shared/utils.js";
 import * as graphhopper from "./graphhopper.js";
+import { initStatus, updateDiskUsage } from "./status.js";
 
 handleSigterm(() => {
     stopAllProcesses();
@@ -17,7 +18,7 @@ async function switchRegion(region) {
 
     graphhopper.stop();
 
-    await graphhopper.downloadRegion(country);
+    await graphhopper.downloadRegion(region);
     if (!(await isDataDirValid())) {
         logger.error("Download finished but data directory still empty, something is wrong.")
         process.exit(1);
@@ -73,6 +74,9 @@ async function initEnvMode() {
 }
 
 async function initManagedMode() {
+    await initStatus();
+    await updateDiskUsage();
+
     setupRedis("mapstack", msg => {
         if (msg.cmd === "graphhopper.set-region") {
             switchRegion(msg.region);

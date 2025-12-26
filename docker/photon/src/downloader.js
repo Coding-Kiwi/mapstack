@@ -4,6 +4,7 @@ import { mkdir, rm } from 'fs/promises';
 import https from 'https';
 import path from 'path';
 import { formatBytes } from "../shared/utils.js";
+import { updateDiskUsage } from './status.js';
 
 async function downloadAndExtract(url) {
     //force-clean the directory and recreate it
@@ -67,6 +68,8 @@ export async function downloadCountry(countryCode) {
 
     try {
         await downloadAndExtract(parsedUrl);
+        await updateDiskUsage();
+
         logger.info('Download and extraction complete!');
     } catch (err) {
         logger.error('Error:', err);

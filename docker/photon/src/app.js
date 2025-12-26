@@ -3,9 +3,10 @@ import logger from "fancy-log";
 import { constants } from 'fs';
 import { access, readdir } from 'fs/promises';
 import path from "path";
-import { handleSigterm, stopAllProcesses } from "../shared/utils.js";
+import { handleSigterm, setupRedis, stopAllProcesses } from "../shared/utils.js";
 import { downloadCountry } from "./downloader.js";
 import * as photon from "./photon.js";
+import { initStatus, updateDiskUsage } from "./status.js";
 
 handleSigterm(() => {
     stopAllProcesses();
@@ -75,6 +76,9 @@ async function initEnvMode() {
 }
 
 async function initManagedMode() {
+    await initStatus();
+    await updateDiskUsage();
+
     setupRedis("mapstack", msg => {
         if (msg.cmd === "photon.set-country") {
             switchCountry(msg.country);
