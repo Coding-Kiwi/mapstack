@@ -1,13 +1,19 @@
 import "@dotenvx/dotenvx/config";
-import { handleSigterm, setupRedis } from "../shared/utils.js";
+import { getRedis, handleSigterm, setupRedis } from "../shared/utils.js";
+import { setupCountryList } from "./countrylist.js";
 
 handleSigterm(() => { });
 
 // init
-(() => {
-    const redis = setupRedis("mapstack", msg => {
+(async () => {
+    const redisPubSub = setupRedis("mapstack", msg => {
 
     });
+
+    const redis = getRedis();
+
+    const countries = await setupCountryList(redis);
+
 
     // redis.publish('photoncmd', 'start', (err, count) => {
     //     if (err) {

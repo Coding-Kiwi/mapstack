@@ -1,12 +1,10 @@
 FROM node:24-alpine
 
-# for downloading and extracting mapdata
-RUN apk add --no-cache bzip2 wget curl
-
 WORKDIR /app
 
-COPY package*.json /app
-COPY src /app/src
+COPY docker/main/package*.json /app
+COPY docker/main/src /app/src
+COPY docker/shared /app/shared
 
 RUN npm ci
 

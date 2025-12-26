@@ -78,7 +78,7 @@ export function isRunning(id) {
 
 // ======== redis handling ========
 
-export function setupRedis(listenChannel, msgCb) {
+export function getRedis() {
     const redis = new Redis(process.env.REDIS_URL, {
         retryStrategy(times) {
             logger.info("Connection retry #" + times + " in 5 seconds");
@@ -95,6 +95,12 @@ export function setupRedis(listenChannel, msgCb) {
 
         logger.error(err);
     });
+
+    return redis;
+}
+
+export function setupRedis(listenChannel, msgCb) {
+    const redis = getRedis();
 
     redis.subscribe(listenChannel, (err, count) => {
         if (err) {
