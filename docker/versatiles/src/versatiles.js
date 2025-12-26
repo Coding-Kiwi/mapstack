@@ -2,7 +2,7 @@ import logger from "fancy-log";
 import { constants } from 'fs';
 import { access, readdir } from "node:fs/promises";
 import { resolve } from "node:path";
-import { launchProcess, stopProcess } from "../shared/utils.js";
+import { downloadFile, launchProcess, stopProcess } from "../shared/utils.js";
 
 export async function getSources() {
     try {
@@ -18,7 +18,7 @@ export async function getSources() {
         .map(f => resolve(process.env.VT_DATA_PATH, f));
 }
 
-export function convert(url, outpath, bbox) {
+function convert(url, outpath, bbox = null) {
     return new Promise((resolve, reject) => {
         logger.info(`Downloading from "${url}" to "${outpath}" with bbox ${bbox}`);
 
@@ -40,6 +40,14 @@ export function convert(url, outpath, bbox) {
             }
         });
     });
+}
+
+export async function downloadRegion(url, outpath, bbox = null) {
+    if (!bbox) {
+        await downloadFile(url, outpath);
+    } else {
+        await convert(url, outpath, bbox);
+    }
 }
 
 export async function start() {

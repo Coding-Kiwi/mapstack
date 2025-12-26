@@ -1,6 +1,9 @@
 import logger from "fancy-log";
+import got from "got";
 import Redis from "ioredis";
 import { spawn } from "node:child_process";
+import fs from "node:fs";
+import { rm } from "node:fs/promises";
 
 export function handleSigterm(cb) {
     ['SIGTERM', 'SIGINT'].forEach(sig => process.on(sig, async () => {
@@ -118,4 +121,31 @@ export function setupRedis(listenChannel, msgCb) {
     });
 
     return redis;
+}
+
+// ======== simple filedownload ========
+
+export async function downloadFile(url, targetFile) {
+    await rm(targetFile, { force: true });
+
+    const downloadStream = got.stream(url);
+    const fileStream = fs.createWriteStream(targetFile);
+
+    return new Promise((resolve, reject) => {
+        let lastStatus = 0;
+
+        downloadStream.on("downloadProgress", progress => {
+            if (Date.now() - lastStatus > 1000) {
+                const percent = (progress.percent * 100).toFixed(1);
+                console.info(`Downloading: ${percent}% - ${formatBytes(progress.transferred)} / ${formatBytes(progress.total)}`);
+                lastStatus = Date.now();
+            }
+        });
+
+        downloadStream.on("error", reject);
+        fileStream.on("error", reject);
+        fileStream.on("finish", resolve);
+
+        downloadStream.pipe(fileStream);
+    });
 }

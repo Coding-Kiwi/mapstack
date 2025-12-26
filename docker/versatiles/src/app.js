@@ -15,7 +15,7 @@ async function switchBBOX(bbox) {
 
     versatiles.stop();
 
-    await versatiles.convert(process.env.DOWNLOAD_URL + "/osm.versatiles", process.env.VT_DATA_PATH + "/osm.versatiles", bbox);
+    await versatiles.downloadRegion(process.env.DOWNLOAD_URL + "/osm.versatiles", process.env.VT_DATA_PATH + "/osm.versatiles", bbox);
 
     if (!(await isDataDirValid())) {
         logger.error("Download finished but data directory still empty, something is wrong.")
@@ -41,7 +41,7 @@ async function initEnvMode() {
 
     //data dir not set up, check if we can download
     if (process.env.BBOX) {
-        await versatiles.convert(process.env.DOWNLOAD_URL + "/osm.versatiles", process.env.VT_DATA_PATH + "/osm.versatiles", process.env.BBOX);
+        await versatiles.downloadRegion(process.env.DOWNLOAD_URL + "/osm.versatiles", process.env.VT_DATA_PATH + "/osm.versatiles", process.env.BBOX);
 
         if (!(await isDataDirValid())) {
             logger.error("Download finished but data directory still empty, something is wrong.")
