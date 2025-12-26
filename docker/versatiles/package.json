@@ -1,0 +1,17 @@
+{
+  "name": "@codingkiwi/mapstack-versatiles",
+  "version": "1.0.0",
+  "description": "",
+  "license": "MIT",
+  "author": "CodingKiwi",
+  "type": "module",
+  "main": "src/app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@dotenvx/dotenvx": "^1.51.2",
+    "fancy-log": "^2.0.0",
+    "ioredis": "^5.8.2"
+  }
+}

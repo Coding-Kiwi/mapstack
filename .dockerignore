@@ -1,0 +1,4 @@
+docker-compose.yaml
+docker-compose.dev.yaml
+node_modules
+var

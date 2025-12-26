@@ -1,0 +1,21 @@
+kind: pipeline
+type: docker
+name: on-tag
+
+trigger:
+  event:
+    - tag
+
+steps:
+  - name: photon
+    image: plugins/docker
+    settings:
+      dockerfile: "./docker/photon/Dockerfile"
+      context: "."
+      repo: codingkiwi/mapstack-photon
+      auto_tag: true
+      tags: latest
+      username:
+        from_secret: docker_username
+      password:
+        from_secret: docker_password
