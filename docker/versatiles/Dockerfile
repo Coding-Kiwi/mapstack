@@ -25,4 +25,6 @@ COPY docker/versatiles/config.yaml /app/config.yaml
 
 VOLUME /app/versatiles_data
 
+EXPOSE 8080
+
 ENTRYPOINT ["node", "src/app.js"]

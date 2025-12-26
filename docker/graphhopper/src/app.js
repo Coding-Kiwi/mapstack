@@ -50,6 +50,7 @@ async function isDataDirValid() {
 async function initEnvMode() {
     //attempt to start
     if (await isDataDirValid()) {
+        //TODO check if still same as COUNTRY, if not redownload (might need a meta file for that)
         graphhopper.start();
         return;
     }
