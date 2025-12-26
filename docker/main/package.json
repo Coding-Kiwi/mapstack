@@ -7,16 +7,26 @@
   "type": "module",
   "main": "src/app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "vite serve src/client",
+    "prod": "vite build src/client"
   },
   "dependencies": {
     "@dotenvx/dotenvx": "^1.51.2",
     "@fastify/http-proxy": "^11.4.1",
+    "@fastify/static": "^9.0.0",
     "fancy-log": "^2.0.0",
     "fastify": "^5.6.2",
     "got": "^14.6.5",
     "i18n-iso-countries": "^7.14.0",
     "ioredis": "^5.8.2",
     "jsdom": "^27.4.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.1.18",
+    "@vitejs/plugin-vue": "^6.0.3",
+    "axios": "^1.13.2",
+    "tailwindcss": "^4.1.18",
+    "vite": "^7.3.0",
+    "vue": "^3.5.26"
   }
 }

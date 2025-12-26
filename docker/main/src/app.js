@@ -1,7 +1,9 @@
 import "@dotenvx/dotenvx/config";
 import fastifyProxy from "@fastify/http-proxy";
+import fastifyStatic from '@fastify/static';
 import logger from "fancy-log";
 import fastify from "fastify";
+import path from "node:path";
 import { getRedis, handleSigterm, setupRedis } from "../shared/utils.js";
 import { setupCountryList } from "./countrylist.js";
 
@@ -56,9 +58,32 @@ handleSigterm(() => { });
     if (process.env.DISABLE_ADMIN !== "true") {
         const admin = fastify();
 
+        await admin.register(fastifyStatic, {
+            root: path.join(import.meta.dirname, 'client', 'dist'),
+            prefix: "/admin",
+            prefixAvoidTrailingSlash: true
+        });
+
         admin.get("/admin/countries", async (req, res) => {
             const countries = await setupCountryList(redis);
             return res.send(countries);
+        })
+
+        admin.get("/admin/status", async (req, res) => {
+            return res.send({
+                photon: {
+                    status: "offline",
+                    disk_usage: null
+                },
+                versatiles: {
+                    status: "starting",
+                    disk_usage: null
+                },
+                graphhopper: {
+                    status: "online",
+                    disk_usage: "23.4 MB"
+                }
+            });
         })
 
         admin.listen({

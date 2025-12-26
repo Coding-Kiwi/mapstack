@@ -1,0 +1,12 @@
+@import "tailwindcss";
+
+/* fade animation for notification and dropdown */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
