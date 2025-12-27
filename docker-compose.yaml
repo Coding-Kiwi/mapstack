@@ -1,6 +1,9 @@
 services:
   mapstack:
     image: codingkiwi/mapstack
+    ports:
+      - 80:80
+      - 8080:8080
 
   photon:
     image: codingkiwi/mapstack-photon
