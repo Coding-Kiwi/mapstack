@@ -5,10 +5,10 @@ WORKDIR /app
 # === nodejs ===
 RUN apk add --no-cache nodejs npm
 
-COPY docker/photon/package*.json /app
-COPY docker/photon/src /app/src
+COPY docker/photon/package*.json /app/
+COPY docker/photon/src /app/src/
 COPY docker/photon/.env /app/.env
-COPY docker/shared /app/shared
+COPY docker/shared /app/shared/
 
 RUN npm ci
 

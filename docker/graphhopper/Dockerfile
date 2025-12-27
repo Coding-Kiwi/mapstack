@@ -5,10 +5,10 @@ WORKDIR /app
 # === nodejs ===
 RUN apk add --no-cache nodejs npm
 
-COPY docker/graphhopper/package*.json /app
-COPY docker/graphhopper/src /app/src
+COPY docker/graphhopper/package*.json /app/
+COPY docker/graphhopper/src /app/src/
 COPY docker/graphhopper/.env /app/.env
-COPY docker/shared /app/shared
+COPY docker/shared /app/shared/
 
 RUN npm ci
 

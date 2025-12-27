@@ -2,10 +2,10 @@ FROM node:24-alpine
 
 WORKDIR /app
 
-COPY docker/main/package*.json /app
-COPY docker/main/src /app/src
+COPY docker/main/package*.json /app/
+COPY docker/main/src /app/src/
 COPY docker/main/.env /app/.env
-COPY docker/shared /app/shared
+COPY docker/shared /app/shared/
 
 RUN npm ci
 RUN npm run prod
