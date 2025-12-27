@@ -31,7 +31,7 @@ export class MapstackService {
         }
 
         if (!expectedDeployment) {
-            logger.error(".env BBOX is not defined and not in MANAGED mode");
+            logger.error("relevant .env is not defined and not in MANAGED mode");
             process.exit(1);
         }
 

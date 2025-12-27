@@ -3,7 +3,7 @@ import got from "got";
 import Redis from "ioredis";
 import { spawn } from "node:child_process";
 import fs from "node:fs";
-import { access, readFile, rm, writeFile } from "node:fs/promises";
+import { access, readdir, readFile, rm, writeFile } from "node:fs/promises";
 
 export function handleSigterm(cb) {
     ['SIGTERM', 'SIGINT'].forEach(sig => process.on(sig, async () => {
@@ -180,6 +180,21 @@ export async function fileExists(filepath) {
     } catch (error) {
         return null;
     }
+}
+
+export async function directoryEmpty(dir) {
+    try {
+        const files = await readdir(dir);
+
+        if (files.length === 0) {
+            logger.info(`data directory ${dir} exists but is empty`);
+            return true;
+        }
+    } catch (error) {
+        logger.info(`could not read directory ${dir}`);
+    }
+
+    return false;
 }
 
 // ======== deployment ========
