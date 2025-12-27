@@ -24,7 +24,7 @@ services:
       - ./var/graphhopper:/app/graphhopper_data
     environment:
       MANAGED: false
-      REGION: "europe/iceland-latest"
+      REGION: "europe/iceland"
 
   valkey:
     image: valkey/valkey:9
