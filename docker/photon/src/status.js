@@ -1,3 +1,4 @@
+import logger from "fancy-log";
 import fastFolderSize from "fast-folder-size";
 import { constants } from "node:fs";
 import { access } from "node:fs/promises";
@@ -28,5 +29,6 @@ export async function updateDiskUsage() {
 }
 
 export async function updateStatus(status) {
+    logger.info("status " + status)
     redis.set("photon.status", status);
 }

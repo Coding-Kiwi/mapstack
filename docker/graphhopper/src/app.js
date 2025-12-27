@@ -12,14 +12,12 @@ handleSigterm(() => {
 });
 
 async function switchRegion(region) {
-    if (process.env.MANAGED !== "true") {
-        logger.error("Switching region dynamically is only supported in MANAGED mode");
-        return;
-    }
+    await graphhopper.stop();
 
-    graphhopper.stop();
+    await updateStatus("starting");
 
     await graphhopper.downloadRegion(region);
+
     if (!(await isDataDirValid())) {
         logger.error("Download finished but data directory still empty, something is wrong.")
         process.exit(1);

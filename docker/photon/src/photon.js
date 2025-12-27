@@ -2,7 +2,7 @@ import { launchProcess, stopProcess } from "../shared/utils.js";
 import { updateStatus } from "./status.js";
 
 export async function start() {
-    updateStatus("starting");
+    await updateStatus("starting");
 
     launchProcess("photon.jar", "java", ["-jar", "photon.jar"], {
         onLog(line) {
@@ -17,6 +17,5 @@ export async function start() {
 }
 
 export async function stop() {
-    stopProcess("photon.jar");
-    await updateStatus("offline");
+    await stopProcess("photon.jar");
 }

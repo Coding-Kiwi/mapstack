@@ -14,14 +14,12 @@ handleSigterm(() => {
 });
 
 async function switchCountry(country) {
-    if (process.env.MANAGED !== "true") {
-        logger.error("Switching country dynamically is only supported in MANAGED mode");
-        return;
-    }
+    await photon.stop();
 
-    photon.stop();
+    await updateStatus("starting");
 
     await downloadCountry(country);
+
     if (!(await isDataDirValid())) {
         logger.error("Download finished but data directory still empty, something is wrong.")
         process.exit(1);

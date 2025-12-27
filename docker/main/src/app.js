@@ -4,20 +4,13 @@ import fastifyStatic from '@fastify/static';
 import logger from "fancy-log";
 import fastify from "fastify";
 import path from "node:path";
-import { getRedis, handleSigterm, setupRedis } from "../shared/utils.js";
+import { getRedis, handleSigterm } from "../shared/utils.js";
 import { setupCountryList } from "./countrylist.js";
 
 handleSigterm(() => { });
 
-//TODO move to utils
-const delay = ms => new Promise(res => setTimeout(res, ms));
-
 // init
 (async () => {
-    const redisPubSub = setupRedis("mapstack", msg => {
-
-    });
-
     const redis = getRedis();
 
     const gateway = fastify();
@@ -90,7 +83,22 @@ const delay = ms => new Promise(res => setTimeout(res, ms));
         })
 
         admin.post("/admin/deploy", async (req, res) => {
-            console.log(req.body);
+            logger.info(`Deploying country ${req.body.country.name}`);
+
+            await redis.publish("mapstack", JSON.stringify({
+                cmd: "versatiles.set-bbox",
+                bbox: req.body.country.bbox.join(",")
+            }));
+
+            await redis.publish("mapstack", JSON.stringify({
+                cmd: "photon.set-country",
+                country: req.body.country.code
+            }));
+
+            await redis.publish("mapstack", JSON.stringify({
+                cmd: "graphhopper.set-region",
+                region: req.body.country.region
+            }));
 
             res.status(204).send();
         });

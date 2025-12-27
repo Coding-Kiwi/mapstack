@@ -24,22 +24,30 @@ export function formatBytes(bytes, decimals = 2) {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
 }
 
+export const delay = ms => new Promise(res => setTimeout(res, ms));
+
 // ======== process handling ========
 
 const processes = {};
 
-export function stopProcess(id) {
-    if (isRunning(id)) {
+export async function stopProcess(id) {
+    if (!isRunning(id)) return;
+
+    return new Promise((resolve, reject) => {
+        processes[id].once('exit', (code, signal) => {
+            resolve();
+        });
+
         logger.info("killing " + id);
         processes[id].kill('SIGTERM');
-    }
+    });
 }
 
-export function stopAllProcesses() {
+export async function stopAllProcesses() {
     logger.info('stopping processes');
 
     for (const id in processes) {
-        stopProcess(id);
+        await stopProcess(id);
     }
 }
 

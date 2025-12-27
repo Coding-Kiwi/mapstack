@@ -10,12 +10,9 @@ handleSigterm(() => {
 });
 
 async function switchBBOX(bbox) {
-    if (process.env.MANAGED !== "true") {
-        logger.error("Switching bbox dynamically is only supported in MANAGED mode");
-        return;
-    }
+    await versatiles.stop();
 
-    versatiles.stop();
+    await updateStatus("starting");
 
     await versatiles.downloadRegion(process.env.DOWNLOAD_URL + "/osm.versatiles", process.env.VT_DATA_PATH + "/osm.versatiles", bbox);
 
@@ -64,11 +61,6 @@ async function initManagedMode() {
 
     setupRedis("mapstack", msg => {
         if (msg.cmd === "versatiles.set-bbox") {
-            switchBBOX(msg.bbox);
-            return;
-        }
-
-        if (msg.cmd === "all.status.update") {
             switchBBOX(msg.bbox);
             return;
         }

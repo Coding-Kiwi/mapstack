@@ -43,9 +43,7 @@ export async function downloadRegion(regionName) {
 }
 
 export async function start() {
-    logger.info(`Launching`);
-
-    updateStatus("starting");
+    await updateStatus("starting");
 
     launchProcess("graphhopper", "java", [
         '-Xmx2g',
@@ -65,6 +63,5 @@ export async function start() {
 }
 
 export async function stop() {
-    stopProcess("graphhopper");
-    await updateStatus("offline");
+    await stopProcess("graphhopper");
 }

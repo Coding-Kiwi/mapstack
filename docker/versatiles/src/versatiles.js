@@ -77,6 +77,5 @@ export async function start() {
 }
 
 export async function stop() {
-    stopProcess("versatiles");
-    await updateStatus("offline");
+    await stopProcess("versatiles");
 }
