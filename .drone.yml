@@ -45,3 +45,16 @@ steps:
         from_secret: docker_username
       password:
         from_secret: docker_password
+        
+  - name: mapstack
+    image: plugins/docker
+    settings:
+      dockerfile: "./docker/main/Dockerfile"
+      context: "."
+      repo: codingkiwi/mapstack
+      auto_tag: true
+      tags: latest
+      username:
+        from_secret: docker_username
+      password:
+        from_secret: docker_password
