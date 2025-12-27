@@ -1,22 +1,22 @@
 services:
   mapstack:
-    image: codingkiwi/mapstack
+    image: codingkiwi/mapstack:1
     ports:
       - 80:80
       - 8080:8080
 
   photon:
-    image: codingkiwi/mapstack-photon
+    image: codingkiwi/mapstack-photon:1
     volumes:
       - ./var/photon:/app/photon_data
 
   versatiles:
-    image: codingkiwi/mapstack-versatiles
+    image: codingkiwi/mapstack-versatiles:1
     volumes:
       - ./var/versatiles:/app/versatiles_data
 
   graphhopper:
-    image: codingkiwi/mapstack-graphhopper
+    image: codingkiwi/mapstack-graphhopper:1
     volumes:
       - ./var/graphhopper:/app/graphhopper_data
 

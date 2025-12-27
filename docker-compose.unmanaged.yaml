@@ -1,9 +1,12 @@
 services:
   mapstack:
-    image: codingkiwi/mapstack
+    image: codingkiwi/mapstack:1
+    ports:
+      - 80:80
+      - 8080:8080
 
   photon:
-    image: codingkiwi/mapstack-photon
+    image: codingkiwi/mapstack-photon:!
     volumes:
       - ./var/photon:/app/photon_data
     environment:
@@ -11,7 +14,7 @@ services:
       COUNTRY: "is"
 
   versatiles:
-    image: codingkiwi/mapstack-versatiles
+    image: codingkiwi/mapstack-versatiles:1
     volumes:
       - ./var/versatiles:/app/versatiles_data
     environment:
@@ -19,7 +22,7 @@ services:
       BBOX: "13.091,52.334,13.74,52.676"
 
   graphhopper:
-    image: codingkiwi/mapstack-graphhopper
+    image: codingkiwi/mapstack-graphhopper:1
     volumes:
       - ./var/graphhopper:/app/graphhopper_data
     environment:
