@@ -4,6 +4,7 @@ import { mkdir, rm } from 'fs/promises';
 import https from 'https';
 import path from 'path';
 import { formatBytes } from "../shared/utils.js";
+import { isDataDirValid } from './photon.js';
 import { updateDiskUsage } from './status.js';
 
 async function downloadAndExtract(url) {
@@ -71,6 +72,11 @@ export async function downloadCountry(countryCode) {
         await updateDiskUsage();
 
         logger.info('Download and extraction complete!');
+
+        if (!(await isDataDirValid())) {
+            logger.error("Download finished but data directory still empty, something is wrong.")
+            process.exit(1);
+        }
     } catch (err) {
         logger.error('Error:', err);
     }

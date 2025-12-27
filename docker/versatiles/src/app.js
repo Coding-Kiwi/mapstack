@@ -46,7 +46,6 @@ async function initEnvMode() {
 
     //download is done, folder is ok, start
     versatiles.start();
-    return;
 }
 
 async function initManagedMode() {

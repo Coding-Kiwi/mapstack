@@ -1,7 +1,6 @@
 import "@dotenvx/dotenvx/config";
 import logger from "fancy-log";
-import { readdir } from 'fs/promises';
-import { fileExists, handleSigterm, setupRedis, stopAllProcesses } from "../shared/utils.js";
+import { handleSigterm, setupRedis, stopAllProcesses } from "../shared/utils.js";
 import * as graphhopper from "./graphhopper.js";
 import { initStatus, updateDiskUsage, updateStatus } from "./status.js";
 
@@ -12,64 +11,42 @@ handleSigterm(() => {
 
 async function switchRegion(region) {
     await graphhopper.stop();
-
     await updateStatus("starting");
-
     await graphhopper.downloadRegion(region);
-
-    if (!(await isDataDirValid())) {
-        logger.error("Download finished but data directory still empty, something is wrong.")
-        process.exit(1);
-    }
-
-    //download is done, folder is ok, start
-    graphhopper.start();
-}
-
-async function isDataDirValid() {
-    const indexPath = graphhopper.CACHE_DIR;
-
-    if (!(await fileExists(indexPath))) return false;
-
-    try {
-        const files = await readdir(indexPath);
-
-        if (!files.length > 0) {
-            logger.info(`data directory ${indexPath} exists but is empty`);
-            return false;
-        }
-
-        return true;
-    } catch (error) {
-        logger.info(`data directory ${indexPath} does not exist`);
-    }
-
-    return false;
+    await graphhopper.start();
 }
 
 async function initEnvMode() {
     //attempt to start
-    if (await isDataDirValid()) {
-        //TODO check if still same as COUNTRY, if not redownload (might need a meta file for that)
-        graphhopper.start();
-        return;
-    }
+    if (await graphhopper.isDataDirValid()) {
+        //we have a valid data dir
 
-    //data dir not set up, check if we can download
-    if (process.env.REGION) {
-        await graphhopper.downloadRegion(process.env.REGION);
+        if (process.env.REGION) {
+            //REGION is configured, check deployment
+            if (await isExpectedDeployment(process.env.REGION)) {
+                logger.info(`Expected deployment ${process.env.REGION} OK`);
+            } else {
+                logger.info(`Current deployment is not ${process.env.REGION}, update`);
 
-        if (!(await isDataDirValid())) {
-            logger.error("Download finished but data directory still empty, something is wrong.")
-            process.exit(1);
+                await graphhopper.downloadRegion(process.env.REGION);
+            }
         }
 
-        //download is done, folder is ok, start
         graphhopper.start();
         return;
     }
 
-    logger.warn(".env REGION is not defined");
+    if (!process.env.REGION) {
+        logger.error(".env REGION is not defined and not in MANAGED mode");
+        process.exit(1);
+    }
+
+
+    //data dir not set up, check if we can download
+    await graphhopper.downloadRegion(process.env.REGION);
+
+    //download is done, folder is ok, start
+    graphhopper.start();
 }
 
 async function initManagedMode() {
@@ -84,8 +61,8 @@ async function initManagedMode() {
     });
 
     //attempt to start
-    if (await isDataDirValid()) {
-        graphhopper.start();
+    if (await graphhopper.isDataDirValid()) {
+        await graphhopper.start();
     }
 }
 
