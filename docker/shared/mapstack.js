@@ -9,13 +9,18 @@ export class MapstackService {
     }
 
     async initEnvMode() {
+        logger.info("Starting in .env standalone mode");
+
         const expectedDeployment = this.getExpectedDeployment();
 
         //attempt to start
         if (await this.isDataDirValid()) {
             //we have a valid data dir
+            logger.info("Data directory seems fine");
 
             if (expectedDeployment) {
+                logger.info("Expecting deployment " + expectedDeployment);
+
                 //BBOX is configured, check deployment
                 if (await isExpectedDeployment(expectedDeployment)) {
                     logger.info(`Expected deployment ${expectedDeployment} OK`);
@@ -31,7 +36,7 @@ export class MapstackService {
         }
 
         if (!expectedDeployment) {
-            logger.error("relevant .env is not defined and not in MANAGED mode");
+            logger.error("relevant .env is not defined or empty");
             process.exit(1);
         }
 
@@ -43,6 +48,8 @@ export class MapstackService {
     }
 
     async initManagedMode() {
+        logger.info("Starting in managed mode");
+
         this.redis = getRedis();
 
         await this.updateDiskUsage();
@@ -53,7 +60,10 @@ export class MapstackService {
 
         //attempt to start
         if (await this.isDataDirValid()) {
+            logger.info("Data directory seems fine, starting");
             await this.start();
+        } else {
+            logger.info("Data directory not ready. waiting for deployment trigger");
         }
     }
 
@@ -68,6 +78,8 @@ export class MapstackService {
     }
 
     async updateDeployment(deployment) {
+        logger.info(`Updating deployment to ${deployment}`);
+
         await this.stop();
         await this.updateStatus("starting");
         await this.prepareDeployment(deployment);

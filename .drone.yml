@@ -19,3 +19,29 @@ steps:
         from_secret: docker_username
       password:
         from_secret: docker_password
+
+  - name: versatiles
+    image: plugins/docker
+    settings:
+      dockerfile: "./docker/versatiles/Dockerfile"
+      context: "."
+      repo: codingkiwi/mapstack-versatiles
+      auto_tag: true
+      tags: latest
+      username:
+        from_secret: docker_username
+      password:
+        from_secret: docker_password
+
+  - name: graphhopper
+    image: plugins/docker
+    settings:
+      dockerfile: "./docker/graphhopper/Dockerfile"
+      context: "."
+      repo: codingkiwi/mapstack-graphhopper
+      auto_tag: true
+      tags: latest
+      username:
+        from_secret: docker_username
+      password:
+        from_secret: docker_password

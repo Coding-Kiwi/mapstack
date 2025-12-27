@@ -4,6 +4,7 @@ WORKDIR /app
 
 COPY docker/versatiles/package*.json /app
 COPY docker/versatiles/src /app/src
+COPY docker/versatiles/.env /app/.env
 COPY docker/shared /app/shared
 
 RUN npm ci

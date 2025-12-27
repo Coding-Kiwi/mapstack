@@ -4,9 +4,11 @@ WORKDIR /app
 
 COPY docker/main/package*.json /app
 COPY docker/main/src /app/src
+COPY docker/main/.env /app/.env
 COPY docker/shared /app/shared
 
 RUN npm ci
+RUN npm run prod
 
 ENV GATEWAY_PORT=80
 ENV GATEWAY_HOST=0.0.0.0
