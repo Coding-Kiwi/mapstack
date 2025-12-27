@@ -1,11 +1,12 @@
 import "@dotenvx/dotenvx/config";
 import logger from "fancy-log";
 import { handleSigterm, setupRedis, stopAllProcesses } from "../shared/utils.js";
-import { initStatus, updateDiskUsage } from "./status.js";
+import { initStatus, updateDiskUsage, updateStatus } from "./status.js";
 import * as versatiles from "./versatiles.js";
 
 handleSigterm(() => {
     stopAllProcesses();
+    updateStatus("offline");
 });
 
 async function switchBBOX(bbox) {

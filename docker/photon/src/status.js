@@ -26,3 +26,7 @@ async function getDiskUsage() {
 export async function updateDiskUsage() {
     redis.set("photon.disk_usage", await getDiskUsage());
 }
+
+export async function updateStatus(status) {
+    redis.set("photon.status", status);
+}

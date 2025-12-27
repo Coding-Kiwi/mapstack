@@ -43,7 +43,7 @@ export function stopAllProcesses() {
     }
 }
 
-export function launchProcess(id, binary, args) {
+export function launchProcess(id, binary, args, opts = {}) {
     logger.info(binary, args.join(" "));
 
     const process = spawn(binary, args);
@@ -53,19 +53,26 @@ export function launchProcess(id, binary, args) {
     process.on('exit', (code, signal) => {
         logger.info(`service exited with code ${code} and signal ${signal}`);
         delete processes[id];
+        if (opts.onExit) opts.onExit(code, signal);
     });
 
     process.stdout.setEncoding('utf8');
     process.stdout.on('data', function (data) {
         data.toString().split(/\r?\n/).forEach(line => {
-            if (line) logger.info("[" + id + "] " + line);
+            if (line) {
+                logger.info("[" + id + "] " + line);
+                if (opts.onLog) opts.onLog(line);
+            }
         });
     });
 
     process.stderr.setEncoding('utf8');
     process.stderr.on('data', function (data) {
         data.toString().split(/\r?\n/).forEach(line => {
-            if (line) logger.error("[" + id + "] " + line);
+            if (line) {
+                logger.info("[" + id + "] " + line);
+                if (opts.onLog) opts.onLog(line);
+            }
         });
     });
 

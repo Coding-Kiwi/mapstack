@@ -6,10 +6,11 @@ import path from "path";
 import { handleSigterm, setupRedis, stopAllProcesses } from "../shared/utils.js";
 import { downloadCountry } from "./downloader.js";
 import * as photon from "./photon.js";
-import { initStatus, updateDiskUsage } from "./status.js";
+import { initStatus, updateDiskUsage, updateStatus } from "./status.js";
 
 handleSigterm(() => {
     stopAllProcesses();
+    updateStatus("offline");
 });
 
 async function switchCountry(country) {

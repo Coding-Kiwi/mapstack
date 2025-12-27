@@ -3,7 +3,7 @@ import { constants } from 'fs';
 import { access, readdir } from "node:fs/promises";
 import { resolve } from "node:path";
 import { downloadFile, launchProcess, stopProcess } from "../shared/utils.js";
-import { updateDiskUsage } from "./status.js";
+import { updateDiskUsage, updateStatus } from "./status.js";
 
 export async function getSources() {
     try {
@@ -54,6 +54,8 @@ export async function downloadRegion(url, outpath, bbox = null) {
 }
 
 export async function start() {
+    await updateStatus("starting");
+
     const sources = await getSources();
 
     logger.info(`Launching with sources ${sources.join(",")}`);
@@ -62,9 +64,19 @@ export async function start() {
         "serve",
         "--config", process.env.VT_CONFIG_PATH,
         ...sources
-    ]);
+    ], {
+        onLog(line) {
+            if (line.includes(process.env.LOG_READY_MATCH)) {
+                updateStatus("online");
+            }
+        },
+        onExit() {
+            updateStatus("offline");
+        }
+    });
 }
 
 export async function stop() {
     stopProcess("versatiles");
+    await updateStatus("offline");
 }

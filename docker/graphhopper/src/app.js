@@ -4,10 +4,11 @@ import { constants } from 'fs';
 import { access, readdir } from 'fs/promises';
 import { handleSigterm, setupRedis, stopAllProcesses } from "../shared/utils.js";
 import * as graphhopper from "./graphhopper.js";
-import { initStatus, updateDiskUsage } from "./status.js";
+import { initStatus, updateDiskUsage, updateStatus } from "./status.js";
 
 handleSigterm(() => {
     stopAllProcesses();
+    updateStatus("offline");
 });
 
 async function switchRegion(region) {
