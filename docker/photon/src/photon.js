@@ -37,6 +37,8 @@ export default class Photon extends MapstackService {
     async prepareDeployment(deployment) {
         await setExpectedDeployment("");
 
+        //TODO if deployment is "planet" use the big full source
+
         const parsedUrl = process.env.COUNTRY_DOWNLOAD_URL.replace(/<COUNTRY>/g, deployment);
         logger.info(`Downloading country "${deployment}" from "${parsedUrl}"`);
 

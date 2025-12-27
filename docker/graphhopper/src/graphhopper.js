@@ -36,6 +36,8 @@ export default class Graphhopper extends MapstackService {
     async prepareDeployment(deployment) {
         await setExpectedDeployment("");
 
+        //TODO if deployment is "planet" use the big full source
+
         const parsedUrl = process.env.REGION_DOWNLOAD_URL.replace(/<REGION>/g, deployment);
         logger.info(`Downloading region "${deployment}" from "${parsedUrl}"`);
 
