@@ -1,8 +1,7 @@
 import "@dotenvx/dotenvx/config";
 import logger from "fancy-log";
-import { constants } from 'fs';
-import { access, readdir } from 'fs/promises';
-import { handleSigterm, setupRedis, stopAllProcesses } from "../shared/utils.js";
+import { readdir } from 'fs/promises';
+import { fileExists, handleSigterm, setupRedis, stopAllProcesses } from "../shared/utils.js";
 import * as graphhopper from "./graphhopper.js";
 import { initStatus, updateDiskUsage, updateStatus } from "./status.js";
 
@@ -30,8 +29,9 @@ async function switchRegion(region) {
 async function isDataDirValid() {
     const indexPath = graphhopper.CACHE_DIR;
 
+    if (!(await fileExists(indexPath))) return false;
+
     try {
-        await access(indexPath, constants.F_OK);
         const files = await readdir(indexPath);
 
         if (!files.length > 0) {

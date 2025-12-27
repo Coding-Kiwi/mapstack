@@ -3,7 +3,7 @@ import got from "got";
 import Redis from "ioredis";
 import { spawn } from "node:child_process";
 import fs from "node:fs";
-import { rm } from "node:fs/promises";
+import { access, readFile, rm, writeFile } from "node:fs/promises";
 
 export function handleSigterm(cb) {
     ['SIGTERM', 'SIGINT'].forEach(sig => process.on(sig, async () => {
@@ -169,4 +169,36 @@ export async function downloadFile(url, targetFile) {
 
         downloadStream.pipe(fileStream);
     });
+}
+
+// ======== fs helpers ========
+
+export async function fileExists(filepath) {
+    try {
+        await access(filepath, fs.constants.F_OK);
+        return true;
+    } catch (error) {
+        return null;
+    }
+}
+
+// ======== deployment ========
+
+const DEPLOYMENT_FILE = "/deployment.state";
+
+export async function setExpectedDeployment(expectedValue) {
+    await writeFile(DEPLOYMENT_FILE, expectedValue);
+}
+
+export async function isExpectedDeployment(expectedValue) {
+    if (!(await fileExists(DEPLOYMENT_FILE))) return false;
+
+    try {
+        const val = await readFile(DEPLOYMENT_FILE, "utf8");
+        return val == expectedValue;
+    } catch (error) {
+        logger.error(error);
+    }
+
+    return false;
 }

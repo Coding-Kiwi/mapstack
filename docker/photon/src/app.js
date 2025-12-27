@@ -1,9 +1,8 @@
 import "@dotenvx/dotenvx/config";
 import logger from "fancy-log";
-import { constants } from 'fs';
-import { access, readdir } from 'fs/promises';
+import { readdir } from 'fs/promises';
 import path from "path";
-import { handleSigterm, setupRedis, stopAllProcesses } from "../shared/utils.js";
+import { fileExists, handleSigterm, setupRedis, stopAllProcesses } from "../shared/utils.js";
 import { downloadCountry } from "./downloader.js";
 import * as photon from "./photon.js";
 import { initStatus, updateDiskUsage, updateStatus } from "./status.js";
@@ -32,8 +31,9 @@ async function switchCountry(country) {
 async function isDataDirValid() {
     const indexPath = path.resolve(process.env.PROTON_DATA_PATH, "node_1");
 
+    if (!(await fileExists(indexPath))) return false;
+
     try {
-        await access(indexPath, constants.F_OK);
         const files = await readdir(indexPath);
 
         if (!files.length > 0) {

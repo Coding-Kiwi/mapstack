@@ -1,6 +1,6 @@
 import "@dotenvx/dotenvx/config";
 import logger from "fancy-log";
-import { handleSigterm, setupRedis, stopAllProcesses } from "../shared/utils.js";
+import { handleSigterm, isExpectedDeployment, setupRedis, stopAllProcesses } from "../shared/utils.js";
 import { initStatus, updateDiskUsage, updateStatus } from "./status.js";
 import * as versatiles from "./versatiles.js";
 
@@ -11,48 +11,42 @@ handleSigterm(() => {
 
 async function switchBBOX(bbox) {
     await versatiles.stop();
-
     await updateStatus("starting");
-
-    await versatiles.downloadRegion(process.env.DOWNLOAD_URL + "/osm.versatiles", process.env.VT_DATA_PATH + "/osm.versatiles", bbox);
-
-    if (!(await isDataDirValid())) {
-        logger.error("Download finished but data directory still empty, something is wrong.")
-        process.exit(1);
-    }
-
-    //download is done, folder is ok, start
-    versatiles.start();
-}
-
-async function isDataDirValid() {
-    const sources = await versatiles.getSources();
-    return sources.length > 0;
+    await versatiles.downloadRegion(bbox);
+    await versatiles.start();
 }
 
 async function initEnvMode() {
     //attempt to start
-    if (await isDataDirValid()) {
-        //TODO check if still same as COUNTRY, if not redownload (might need a meta file for that)
+    if (await versatiles.isDataDirValid()) {
+        //we have a valid data dir
+
+        if (process.env.BBOX) {
+            //BBOX is configured, check deployment
+            if (await isExpectedDeployment(process.env.BBOX)) {
+                logger.info(`Expected deployment ${process.env.BBOX} OK`);
+            } else {
+                logger.info(`Current deployment is not ${process.env.BBOX}, update`);
+
+                await versatiles.downloadRegion(process.env.BBOX);
+            }
+        }
+
         versatiles.start();
         return;
+    }
+
+    if (!process.env.BBOX) {
+        logger.error(".env BBOX is not defined and not in MANAGED mode");
+        process.exit(1);
     }
 
     //data dir not set up, check if we can download
-    if (process.env.BBOX) {
-        await versatiles.downloadRegion(process.env.DOWNLOAD_URL + "/osm.versatiles", process.env.VT_DATA_PATH + "/osm.versatiles", process.env.BBOX);
+    await versatiles.downloadRegion(process.env.BBOX);
 
-        if (!(await isDataDirValid())) {
-            logger.error("Download finished but data directory still empty, something is wrong.")
-            process.exit(1);
-        }
-
-        //download is done, folder is ok, start
-        versatiles.start();
-        return;
-    }
-
-    logger.warn(".env BBOX is not defined");
+    //download is done, folder is ok, start
+    versatiles.start();
+    return;
 }
 
 async function initManagedMode() {
@@ -67,8 +61,8 @@ async function initManagedMode() {
     });
 
     //attempt to start
-    if (await isDataDirValid()) {
-        versatiles.start();
+    if (await versatiles.isDataDirValid()) {
+        await versatiles.start();
     }
 }
 

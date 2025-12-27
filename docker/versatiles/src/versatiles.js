@@ -1,14 +1,11 @@
 import logger from "fancy-log";
-import { constants } from 'fs';
-import { access, readdir } from "node:fs/promises";
+import { readdir } from "node:fs/promises";
 import { resolve } from "node:path";
-import { downloadFile, launchProcess, stopProcess } from "../shared/utils.js";
+import { downloadFile, fileExists, launchProcess, setExpectedDeployment, stopProcess } from "../shared/utils.js";
 import { updateDiskUsage, updateStatus } from "./status.js";
 
 export async function getSources() {
-    try {
-        await access(process.env.VT_DATA_PATH, constants.F_OK);
-    } catch (error) {
+    if (!(await fileExists(process.env.VT_DATA_PATH))) {
         logger.info(`data directory ${process.env.VT_DATA_PATH} does not exist`);
         return [];
     }
@@ -43,11 +40,29 @@ function convert(url, outpath, bbox = null) {
     });
 }
 
-export async function downloadRegion(url, outpath, bbox = null) {
+export async function isDataDirValid() {
+    const sources = await getSources();
+    return sources.length > 0;
+}
+
+export async function downloadRegion(bbox = null) {
+    await setExpectedDeployment("");
+
     if (!bbox) {
-        await downloadFile(url, outpath);
+        await downloadFile(process.env.DOWNLOAD_URL + "/osm.versatiles", process.env.VT_DATA_PATH + "/osm.versatiles");
+        await downloadFile(process.env.DOWNLOAD_URL + "/hillshade-vectors.versatiles", process.env.VT_DATA_PATH + "/hillshade-vectors.versatiles");
+        await downloadFile(process.env.DOWNLOAD_URL + "/landcover-vectors.versatiles", process.env.VT_DATA_PATH + "/landcover-vectors.versatiles");
+        await setExpectedDeployment("planet");
     } else {
-        await convert(url, outpath, bbox);
+        await convert(process.env.DOWNLOAD_URL + "/osm.versatiles", process.env.VT_DATA_PATH + "/osm.versatiles", bbox);
+        await convert(process.env.DOWNLOAD_URL + "/hillshade-vectors.versatiles", process.env.VT_DATA_PATH + "/hillshade-vectors.versatiles", bbox);
+        await convert(process.env.DOWNLOAD_URL + "/landcover-vectors.versatiles", process.env.VT_DATA_PATH + "/landcover-vectors.versatiles", bbox);
+        await setExpectedDeployment(bbox);
+    }
+
+    if (!(await isDataDirValid())) {
+        logger.error("Download finished but data directory still empty, something is wrong.")
+        process.exit(1);
     }
 
     await updateDiskUsage();

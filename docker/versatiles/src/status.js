@@ -1,9 +1,7 @@
 import logger from "fancy-log";
 import fastFolderSize from "fast-folder-size";
-import { constants } from "node:fs";
-import { access } from "node:fs/promises";
 import { promisify } from "node:util";
-import { formatBytes, getRedis } from "../shared/utils.js";
+import { fileExists, formatBytes, getRedis } from "../shared/utils.js";
 
 let redis;
 
@@ -12,11 +10,7 @@ export async function initStatus() {
 }
 
 async function getDiskUsage() {
-    try {
-        await access(process.env.VT_DATA_PATH, constants.F_OK);
-    } catch (error) {
-        return null;
-    }
+    if (!(await fileExists(process.env.VT_DATA_PATH))) return null;
 
     const fastFolderSizeAsync = promisify(fastFolderSize);
     const bytes = await fastFolderSizeAsync(process.env.VT_DATA_PATH);
@@ -25,10 +19,13 @@ async function getDiskUsage() {
 }
 
 export async function updateDiskUsage() {
+    if (!redis) return;
     redis.set("versatiles.disk_usage", await getDiskUsage());
 }
 
 export async function updateStatus(status) {
+    if (!redis) return;
+
     logger.info("status " + status)
     redis.set("versatiles.status", status);
 }
