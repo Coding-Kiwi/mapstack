@@ -1,94 +1,103 @@
 import logger from "fancy-log";
-import { mkdir, readdir } from "fs/promises";
-import path from "path";
-import { downloadFile, fileExists, launchProcess, stopProcess } from "../shared/utils.js";
-import { updateDiskUsage, updateStatus } from "./status.js";
+import { join } from "node:path";
+import { MapstackService } from "../shared/mapstack.js";
+import { directoryEmpty, downloadFile, fileExists, launchProcess, setExpectedDeployment, stopProcess } from "../shared/utils.js";
 
-export const PBF_FILE = path.join(process.env.GH_DATA_PATH, "input.osm.pbf");
-export const CACHE_DIR = path.join(process.env.GH_DATA_PATH, "cache");
+export default class Graphhopper extends MapstackService {
+    constructor() {
+        super("graphhopper");
 
-export function importPbf() {
-    return new Promise((resolve, reject) => {
-        logger.info(`Importing "${PBF_FILE}" using target cache "${CACHE_DIR}"`);
+        this.pbf_file = join(process.env.GH_DATA_PATH, "input.osm.pbf");
+        this.cache_dir = join(process.env.GH_DATA_PATH, "cache");
+    }
 
-        let importProcess = launchProcess("graphhopper-import", "java", [
-            '-Xmx4g', '-Xms4g',
-            '-Ddw.graphhopper.datareader.file=' + PBF_FILE,
-            '-Ddw.graphhopper.graph.location=' + CACHE_DIR,
+    // === service functions ===
+
+    getExpectedDeployment() {
+        return process.env.REGION;
+    }
+
+    getDataPath() {
+        return this.cache_dir;
+    }
+
+    handleMessage(msg) {
+        if (msg.cmd === "graphhopper.set-region") {
+            this.updateDeployment(msg.region);
+            return;
+        }
+    }
+
+    async isDataDirValid() {
+        if (!(await fileExists(this.cache_dir))) return false;
+        return !(await directoryEmpty(this.cache_dir));
+    }
+
+    async prepareDeployment(deployment) {
+        await setExpectedDeployment("");
+
+        const parsedUrl = process.env.REGION_DOWNLOAD_URL.replace(/<REGION>/g, deployment);
+        logger.info(`Downloading region "${deployment}" from "${parsedUrl}"`);
+
+        await downloadFile(parsedUrl, this.pbf_file);
+        await this.importPbf();
+
+        await setExpectedDeployment(deployment);
+
+        if (!(await this.isDataDirValid())) {
+            logger.error("Download finished but data directory still empty, something is wrong.")
+            process.exit(1);
+        }
+
+        await this.updateDiskUsage();
+    }
+
+    async start() {
+        await this.updateStatus("starting");
+
+        launchProcess("graphhopper", "java", [
+            '-Xmx2g',
+            `-Ddw.graphhopper.graph.location=${this.cache_dir}`,
             '-jar', process.env.GH_BINARY_PATH,
-            'import', process.env.GH_CONFIG_PATH
-        ]);
-
-        importProcess.on('exit', (code, signal) => {
-            importProcess = null;
-
-            if (code === 0) {
-                resolve();
-            } else {
-                reject();
+            'server', process.env.GH_CONFIG_PATH
+        ], {
+            onLog: (line) => {
+                if (line.includes(process.env.LOG_READY_MATCH)) {
+                    this.updateStatus("online");
+                }
+            },
+            onExit: () => {
+                this.updateStatus("offline");
             }
         });
-    });
-}
-
-export async function isDataDirValid() {
-    const indexPath = graphhopper.CACHE_DIR;
-
-    if (!(await fileExists(indexPath))) return false;
-
-    try {
-        const files = await readdir(indexPath);
-
-        if (!files.length > 0) {
-            logger.info(`data directory ${indexPath} exists but is empty`);
-            return false;
-        }
-
-        return true;
-    } catch (error) {
-        logger.info(`data directory ${indexPath} does not exist`);
     }
 
-    return false;
-}
-
-export async function downloadRegion(regionName) {
-    const parsedUrl = process.env.REGION_DOWNLOAD_URL.replace(/<REGION>/g, regionName);
-    logger.info(`Downloading region "${regionName}" from "${parsedUrl}"`);
-
-    await mkdir(CACHE_DIR, { recursive: true });
-
-    await downloadFile(parsedUrl, PBF_FILE);
-    await importPbf();
-
-    if (!(await isDataDirValid())) {
-        logger.error("Download finished but data directory still empty, something is wrong.")
-        process.exit(1);
+    async stop() {
+        await stopProcess("graphhopper");
     }
 
-    await updateDiskUsage();
-}
+    // === custom functions ===
+    async importPbf() {
+        return new Promise((resolve, reject) => {
+            logger.info(`Importing "${this.pbf_file}" using target cache "${this.cache_dir}"`);
 
-export async function start() {
-    await updateStatus("starting");
+            let importProcess = launchProcess("graphhopper-import", "java", [
+                '-Xmx4g', '-Xms4g',
+                '-Ddw.graphhopper.datareader.file=' + this.pbf_file,
+                '-Ddw.graphhopper.graph.location=' + this.cache_dir,
+                '-jar', process.env.GH_BINARY_PATH,
+                'import', process.env.GH_CONFIG_PATH
+            ]);
 
-    launchProcess("graphhopper", "java", [
-        '-Xmx2g',
-        `-Ddw.graphhopper.graph.location=${CACHE_DIR}`,
-        '-jar', process.env.GH_BINARY_PATH,
-        'server', process.env.GH_CONFIG_PATH
-    ], {
-        onLog(line) {
-            if (line.includes(process.env.LOG_READY_MATCH)) {
-                updateStatus("online");
-            }
-        },
-        onExit() {
-            updateStatus("offline");
-        }
-    });
-}
+            importProcess.on('exit', (code, signal) => {
+                importProcess = null;
 
-export async function stop() {
-    await stopProcess("graphhopper");
+                if (code === 0) {
+                    resolve();
+                } else {
+                    reject();
+                }
+            });
+        });
+    }
 }
