@@ -156,9 +156,9 @@ export async function downloadFile(url, targetFile) {
         let lastStatus = 0;
 
         downloadStream.on("downloadProgress", progress => {
-            if (Date.now() - lastStatus > 1000) {
+            if (Date.now() - lastStatus > 1000 && progress.total) {
                 const percent = (progress.percent * 100).toFixed(1);
-                console.info(`Downloading: ${percent}% - ${formatBytes(progress.transferred)} / ${formatBytes(progress.total)}`);
+                logger.info(`Downloading: ${percent}% - ${formatBytes(progress.transferred)} / ${formatBytes(progress.total)}`);
                 lastStatus = Date.now();
             }
         });
