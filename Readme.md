@@ -30,7 +30,7 @@ Managed mode deploys all Mapstack services together via docker compose, with a r
 
 * `codingkiwi/mapstack-graphhopper` - routing
 * `codingkiwi/mapstack-photon` - geocoding
-* `codingkiwi/mapstack-versatiles` - map tiles
+* `codingkiwi/mapstack-versatiles` - map tiles and versatile maplibre assets (fonts/sprites)
 * `codingkiwi/mapstack` - admin interface & gateway proxy
 * `valkey` - configuration sync
 
@@ -39,6 +39,11 @@ Check `docker-compose.yaml` for a example
 **Features:**
 
 * Gateway exposes **all services under a single endpoint** (port 80).
+  * /geocode
+  * /tiles
+  * /sprites
+  * /fonts
+  * /routing
 * Admin interface (port 8080) allows selecting a country, downloading the data, and automatically restarting services.
   * can be disabled by setting `DISABLE_ADMIN` to `true`
 
