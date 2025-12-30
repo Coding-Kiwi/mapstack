@@ -27,6 +27,18 @@ handleSigterm(() => { });
     });
 
     gateway.register(fastifyProxy, {
+        upstream: process.env.VERSATILES_URL,
+        prefix: "/sprites",
+        rewritePrefix: "/sprites"
+    });
+
+    gateway.register(fastifyProxy, {
+        upstream: process.env.VERSATILES_URL,
+        prefix: "/fonts",
+        rewritePrefix: "/fonts"
+    });
+
+    gateway.register(fastifyProxy, {
         upstream: process.env.GRAPHHOPPER_URL,
         prefix: "/routing",
         preValidation: async (request, reply) => {

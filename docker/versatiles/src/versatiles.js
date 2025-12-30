@@ -64,6 +64,8 @@ export default class Versatiles extends MapstackService {
         launchProcess("versatiles", process.env.VT_BINARY_PATH, [
             "serve",
             "--config", process.env.VT_CONFIG_PATH,
+            "-s", "[/sprites]" + process.env.VT_ASSETS_PATH + "/sprites.tar.gz",
+            "-s", "[/fonts]" + process.env.VT_ASSETS_PATH + "/fonts.tar.gz",
             ...sources
         ], {
             onLog: (line) => {

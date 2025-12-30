@@ -21,10 +21,15 @@ RUN chmod +x versatiles
 ENV VT_BINARY_PATH="/app/versatiles"
 ENV VT_CONFIG_PATH="/app/config.yaml"
 ENV VT_DATA_PATH="/app/versatiles_data"
+ENV VT_ASSETS_PATH="/app/versatiles_assets"
 
 COPY docker/versatiles/config.yaml /app/config.yaml
 
 VOLUME /app/versatiles_data
+
+RUN mkdir $VT_ASSETS_PATH
+RUN wget -O "$VT_ASSETS_PATH/fonts.tar.gz" https://github.com/versatiles-org/versatiles-fonts/releases/latest/download/fonts.tar.gz
+RUN wget -O "$VT_ASSETS_PATH/sprites.tar.gz" https://github.com/versatiles-org/versatiles-style/releases/latest/download/sprites.tar.gz
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 CMD curl -f http://localhost:8080/status || exit 1
 
